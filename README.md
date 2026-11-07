@@ -115,6 +115,8 @@ Principle: local inference is free; metering applies only to shared/remote node 
 
 ## QB Protocol Bridge (Node Directive) — Fair Pricing, Usage & Dataset
 
+**Auto-provisioning (broad spectrum):** Argon API is auto-provisioned under *all* model subsets — not just Argon. Subsets: `local` (GGUF/ensemble), `openai` (GPT/Verios-class), `anthropic` (Claude), `nemotron` (NVIDIA Nemotron), `huggingface`, `argon/vercel` (portal), `all`. Check: `GET /argon/provision/status`, `POST /argon/provision/auto`, `GET /argon/subsets`. Credentials stay in env vars only (no secrets in git/API responses).
+
 This repo’s Vercel portal (`https://arvc-indol.vercel.app`) can connect to a local/remote **QB Protocol** bridge for unified model access, mesh pooling, and metered usage — **without leaking credentials**.
 
 ### Connect (no credentials in git/frontend)
