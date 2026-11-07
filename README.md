@@ -103,3 +103,10 @@ It connects to your local backend via `ARGON_BACKEND_URL` (defaults to
 `http://127.0.0.1:8765`).
 
 Frontend only. No backend code is included in the deployed frontend repo.
+Fair API pricing (live, configurable via POST /usage/pricing)
+
+local_free (self-hosted): $0.000 / 1k tokens, $0.000 / request (999,999/mo included)
+community: $0.0005 / 1k tokens, $0.0001 / request (10k/mo included)
+standard: $0.002 / 1k tokens, $0.001 / request
+pro: $0.005 / 1k tokens, $0.002 / request
+Principle: local inference is free; metering applies only to shared/remote node usage. Transparent, no hidden fees.
