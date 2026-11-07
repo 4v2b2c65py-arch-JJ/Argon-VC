@@ -29,7 +29,7 @@
 
       const fetchStatus = async () => {
         try {
-          const res = await fetch('/mcp/status', { cache: 'no-store' });
+          const res = await fetch((window.argonApiUrl?argonApiUrl('/mcp/status'):'/mcp/status'), { cache: 'no-store', headers: (window.argonApiHeaders?argonApiHeaders():{}) });
           if (res.ok) {
             routerStatus.value = await res.json();
             connected.value = true;
@@ -62,9 +62,9 @@
         };
         addLog(`Routing MCP call: ${call.method}`);
         try {
-          const res = await fetch('/mcp/route', {
+          const res = await fetch((window.argonApiUrl?argonApiUrl('/mcp/route'):'/mcp/route'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: (window.argonApiHeaders?argonApiHeaders():{'Content-Type':'application/json'}),
             body: JSON.stringify(call),
           });
           if (res.ok) {
@@ -92,9 +92,9 @@
         const cmd = `${gitClient.value} clone --branch ${server.branch} ${server.gitUrl} mcp-servers/${server.id}`;
         addLog(`$ ${cmd}`);
         try {
-          const res = await fetch('/api/mcp/install', {
+          const res = await fetch((window.argonApiUrl?argonApiUrl('/api/mcp/install'):'/api/mcp/install'), {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: (window.argonApiHeaders?argonApiHeaders():{'Content-Type':'application/json'}),
             body: JSON.stringify({
               id: server.id, name: server.name, gitUrl: server.gitUrl, branch: server.branch,
               installPath: `mcp-servers/${server.id}`, gitClient: gitClient.value,
