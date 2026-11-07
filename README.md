@@ -155,12 +155,25 @@ curl -H "X-Protocol-Version: 2" $ARGON_BACKEND_URL/pool/status
 ```
 
 ### Current Machine Dataset / Model Footprint (reference snapshot)
-Measured on the reference node (update via `/models/registry/rescan` + `du` as models change):
+Measured on the reference node (update via `/models/registry/rescan` + `du` / `POST /benchmark/velocity` as models change). Full report: [`docs/MODEL_SPEED_BENCHMARK.md`](docs/MODEL_SPEED_BENCHMARK.md).
 
 | Location | Size | Real model files (>=1MB) | Notes |
 |---|---:|---:|---|
-| `qb_protocol/models` | **1.3 GB** | **1** | `tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf` (~637.81 MB) |
-| `speed/Gnu-3.4-console-edition/alien ware/gnu 3.4` | **544 KB** | **0** | 22 `.gguf` entries present; currently stub/small (<1MB), discovered but not loadable as weights |
+| `qb_protocol/models` | **637.81 MB (1.3G dir)** | **1** | `tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf` (~637.81 MB) |
+| `speed/Gnu-3.4-console-edition/alien ware/gnu 3.4` | **0.19 MB (544 KB dir)** | **0** | 22 `.gguf` entries present; currently stub/small (<1MB), discovered but not loadable as weights |
 | Unified registry (live) | — | **7 providers / 31 model entries** | Categories: `local_gguf`, `openai`, `anthropic`, `nemotron`, `huggingface`, `vercel`; credential status only |
+
+#### X-Velocity Benchmark (1000x → limit, 2026-11-07, macOS x86_64/Python 3.14.7)
+Local dispatch/registry/routing/pricing/provision ops (credential-safe; no external API calls). Limit reached at **8000x** (1.0s/scale/op cap); **peak avg 856,576.94 ops/sec**.
+
+| X | Avg ops/sec | Notes |
+|---:|---:|---|
+| 1000 | 590,762.77 | ok |
+| 2000 | 658,102.68 | ok |
+| 4000 | 547,056.35 | ok |
+| 8000 | 856,576.94 | time cap (`argon_provision_status`) — effective local limit in this sweep |
+
+Per-provider: all 7 providers assessed; local dispatch ~856k ops/s. Remote providers (OpenAI/Claude/Nemotron/HF) and Vercel portal end-to-end speed is dominated by network/provider latency; token generation measured separately when a local backend/model is loaded. Raw: `~/.qb_protocol_velocity_benchmark.json`, `GET/POST /benchmark/velocity`.
+
 
 *Credential safety:* registry exposes only env var names + configured booleans. Never commit `.env`, API keys, tokens, or wallet secrets.
