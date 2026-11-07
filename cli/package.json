@@ -1,0 +1,19 @@
+{
+  "name": "argon-cli",
+  "version": "1.0.0",
+  "description": "Argon Model CLI — install the Argon model CLI tool directly into your terminal",
+  "bin": {
+    "argon": "./bin/argon"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "README.md"
+  ],
+  "scripts": {
+    "install": "node install.js",
+    "postinstall": "node install.js"
+  },
+  "keywords": ["argon", "model", "cli", "mcp", "ai", "backend"],
+  "license": "MIT"
+}

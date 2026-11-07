@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+'use strict';
+
+const { spawnSync } = require('child_process');
+const path = require('path');
+
+const args = process.argv.slice(2);
+
+// Prefer the bundled Python CLI if Python is available
+const pythonCli = path.join(__dirname, '..', '..', 'yamal', 'cli', 'argon_cli.py');
+
+// Check if python is available
+const pyCheck = spawnSync('python', ['--version'], { encoding: 'utf8' });
+const py3Check = spawnSync('python3', ['--version'], { encoding: 'utf8' });
+
+let pythonCmd = null;
+if (pyCheck.status === 0) pythonCmd = 'python';
+else if (py3Check.status === 0) pythonCmd = 'python3';
+
+if (pythonCmd && require('fs').existsSync(pythonCli)) {
+  const result = spawnSync(pythonCmd, [pythonCli, ...args], {
+    stdio: 'inherit',
+    env: { ...process.env, PYTHONPATH: path.join(__dirname, '..', '..') },
+  });
+  process.exit(result.status || 0);
+} else {
+  console.error('Python is required to run the Argon CLI.');
+  console.error('Install Python from https://python.org and ensure it is on your PATH.');
+  process.exit(1);
+}
