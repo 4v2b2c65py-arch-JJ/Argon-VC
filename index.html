@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argon — Model API Documentation & Plugins</title>
+    <meta name="description" content="Argon model API documentation, plugins, and glass UI frontend interface">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/styles/glass.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        argon: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        },
+                        glass: {
+                            bg: 'rgba(255, 255, 255, 0.7)',
+                            border: 'rgba(255, 255, 255, 0.2)',
+                        }
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('src/styles/glass.css');
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .glass-depth-1 {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .glass-depth-2 {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+        
+        .glass-depth-3 {
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(32px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glass-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .plugin-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.12);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        
+        .code-lang-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .lang-css { background: rgba(0, 150, 255, 0.15); color: #0096ff; border: 1px solid rgba(0, 150, 255, 0.3); }
+        .lang-react { background: rgba(97, 218, 251, 0.15); color: #61dafb; border: 1px solid rgba(97, 218, 251, 0.3); }
+        .lang-framer { background: rgba(0, 0, 0, 0.2); color: #000000; border: 1px solid rgba(255, 255, 255, 0.3); }
+        .lang-python { background: rgba(85, 95, 255, 0.15); color: #3776ab; border: 1px solid rgba(55, 118, 171, 0.3); }
+        .lang-rust { background: rgba(183, 118, 66, 0.15); color: #b74b34; border: 1px solid rgba(183, 75, 52, 0.3); }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .gradient-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
+        }
+        
+        .nav-item.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 overflow-x-hidden selection:bg-emerald-500/30">
+    
+    <div class="gradient-mesh"></div>
+    
+    <!-- Vue + React mount container (Vue components on top of React) -->
+    <div id="vue-app" class="min-h-screen"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 glass-depth-1">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center glass-depth-2 shadow-lg">
+                        <span class="text-white font-bold text-lg">A</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight glass-text">Argon</h1>
+                        <p class="text-xs text-slate-500 font-medium">Model API &amp; Plugin Hub</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 hidden md:flex">
+                    <button class="nav-item active px-4 py-2 rounded-xl text-sm font-medium transition-all" onclick="showSection('landing')">
+                        Landing
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-xl text-sm font-medium transition-all" onclick="showSection('api-docs')">
+                        API Docs
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-xl text-sm font-medium transition-all" onclick="showSection('plugins')">
+                        Plugins
+                    </button>
+                    <button class="nav-item px-4 py-2 rounded-xl text-sm font-medium transition-all" onclick="showSection('code-langs')">
+                        Code Langs
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="google-login-btn" class="px-5 py-2.5 rounded-xl glass-depth-2 text-sm font-semibold text-slate-700 hover:bg-white/50 transition-all flex items-center gap-2 border border-white/40">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09"/><path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23"/><path fill="#FBBC04" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12c0 1.78.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#34A853" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07h3.57c.6-1.82 2.1-3.1 3.88-3.11v4.53z"/></svg>
+                        Sign in with Google
+                    </button>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-400 to-blue-500 flex items-center justify-center text-xs font-bold text-white shadow-md" id="user-avatar" style="display:none">AJ</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <section id="landing" class="pt-32 pb-20 min-h-screen px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 animate-float">
+                <h2 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 glass-text">
+                    Argon Model API
+                </h2>
+                <p class="text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+                    Host your API documentation, manage plugins, and build with a glass UI depth interface. 
+                    Secure model access with Google authentication and React + Framer templates.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="showSection('api-docs')" class="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-lg shadow-lg shadow-emerald-200 transition-all glass-depth-2">
+                        View API Docs
+                    </button>
+                    <button onclick="showSection('plugins')" class="px-8 py-4 glass-panel hover:bg-white/80 text-slate-700 rounded-xl font-semibold text-lg border border-white/50 transition-all">
+                        Browse Plugins
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Feature Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                <div class="glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group">
+                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors mb-6">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">API Documentation</h3>
+                    <p class="text-slate-600 leading-relaxed">Complete OpenAPI-compatible reference for model endpoints, MCP routing, and weight enforcement APIs.</p>
+                </div>
+                <div class="glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group">
+                    <div class="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-100 transition-colors mb-6">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Plugin System</h3>
+                    <p class="text-slate-600 leading-relaxed">Extend the frontend with modular plugins. Code language support, UI components, and integration extensions.</p>
+                </div>
+                <div class="glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group">
+                    <div class="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 group-hover:bg-purple-100 transition-colors mb-6">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Glass UI Depth</h3>
+                    <p class="text-slate-600 leading-relaxed">React + Framer-inspired glassmorphism with depth layers, backdrop blur, and floating panels.</p>
+                </div>
+            </div>
+            
+            <!-- Code Language Showcase -->
+            <div class="glass-depth-2 p-10 rounded-3xl mb-16 border border-white/40">
+                <h3 class="text-2xl font-bold mb-8 text-center glass-text">Supported Code Languages</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 justify-center">
+                    <span class="code-lang-badge lang-css">CSS3</span>
+                    <span class="code-lang-badge lang-react">React 18</span>
+                    <span class="code-lang-badge lang-framer">Framer</span>
+                    <span class="code-lang-badge lang-python">Python 3.11</span>
+                    <span class="code-lang-badge lang-rust">Rust</span>
+                    <span class="code-lang-badge lang-css">Tailwind</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Docs Section -->
+    <section id="api-docs" class="hidden pt-32 pb-20 min-h-screen px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-10">
+                <div>
+                    <h2 class="text-3xl font-bold tracking-tight glass-text">API Documentation</h2>
+                    <p class="text-slate-600 mt-2">OpenAPI-compatible reference for all yamal model endpoints.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800">
+                        Download Spec
+                    </button>
+                    <button class="px-4 py-2 glass-panel text-slate-700 rounded-lg text-sm font-medium border border-white/50 hover:bg-white/40">
+                        Try in Console
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid lg:grid-cols-12 gap-8">
+                <!-- Sidebar -->
+                <div class="lg:col-span-3 space-y-4">
+                    <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Endpoints</h4>
+                    <div class="space-y-2">
+                        <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200" onclick="loadEndpoint('mcp')">
+                            MCP Router
+                        </button>
+                        <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200" onclick="loadEndpoint('weights')">
+                            Weight Enforcement
+                        </button>
+                        <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200" onclick="loadEndpoint('feature')">
+                            Feature Availability
+                        </button>
+                        <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200" onclick="loadEndpoint('bridge')">
+                            Model Bridge
+                        </button>
+                        <button class="w-full text-left px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-transparent hover:border-emerald-200" onclick="loadEndpoint('benchmark')">
+                            Benchmarks
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="lg:col-span-9 glass-panel p-8 rounded-2xl min-h-[600px]" id="api-content">
+                    <div class="text-center pt-20">
+                        <svg class="w-16 h-16 text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <h3 class="text-xl font-semibold text-slate-600 mb-2">Select an endpoint</h3>
+                        <p class="text-sm text-slate-400">Choose an endpoint from the sidebar to view its documentation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Plugins Section -->
+    <section id="plugins" class="hidden pt-32 pb-20 min-h-screen px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-10">
+                <div>
+                    <h2 class="text-3xl font-bold tracking-tight glass-text">Plugin Hub</h2>
+                    <p class="text-slate-600 mt-2">Extend the frontend interface with modular plugins.</p>
+                </div>
+                <button class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-lg shadow-emerald-200 transition-all glass-depth-2 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Install Plugin
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Plugin Card: Code Language Support -->
+                <div class="plugin-card glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group cursor-pointer" onclick="installPlugin('code-lang')">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
+                            <span class="text-xl">💻</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold group-hover:text-emerald-600 transition-colors">Code Language Support</h3>
+                            <p class="text-xs text-slate-500 font-mono">css • react • framer • python • rust</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 mb-6">Add syntax highlighting and language elements for CSS, React, Framer, Python, and Rust code blocks.</p>
+                    <div class="flex gap-2">
+                        <span class="code-lang-badge lang-css">CSS</span>
+                        <span class="code-lang-badge lang-react">React</span>
+                        <span class="code-lang-badge lang-framer">Framer</span>
+                    </div>
+                </div>
+                
+                <!-- Plugin Card: Google Auth -->
+                <div class="plugin-card glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group cursor-pointer" onclick="installPlugin('google-auth')">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-600 group-hover:bg-red-100 transition-colors">
+                            <span class="text-xl">🔐</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold group-hover:text-emerald-600 transition-colors">Google Login</h3>
+                            <p class="text-xs text-slate-500 font-mono">oauth2 • google-identity</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 mb-6">Secure user authentication with Google OAuth2. Manages session state and user profile.</p>
+                    <div class="flex gap-2">
+                        <span class="code-lang-badge lang-python">OAuth2</span>
+                        <span class="code-lang-badge lang-css">JWT</span>
+                    </div>
+                </div>
+                
+                <!-- Plugin Card: Glass UI -->
+                <div class="plugin-card glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group cursor-pointer" onclick="installPlugin('glass-ui')">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-100 transition-colors">
+                            <span class="text-xl">🪞</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold group-hover:text-emerald-600 transition-colors">Glass UI Depth</h3>
+                            <p class="text-xs text-slate-500 font-mono">framer • tailwind • backdrop-filter</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 mb-6">Framer-inspired glassmorphism components with depth layers, backdrop blur, and floating panels.</p>
+                    <div class="flex gap-2">
+                        <span class="code-lang-badge lang-framer">Framer</span>
+                        <span class="code-lang-badge lang-css">Tailwind</span>
+                        <span class="code-lang-badge lang-css">CSS3</span>
+                    </div>
+                </div>
+                
+                <!-- Plugin Card: Model Bridge -->
+                <div class="plugin-card glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group cursor-pointer" onclick="installPlugin('model-bridge')">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-100 transition-colors">
+                            <span class="text-xl">🌉</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold group-hover:text-emerald-600 transition-colors">Model Bridge</h3>
+                            <p class="text-xs text-slate-500 font-mono">open-ai • ollama • llama-cpp</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 mb-6">Route requests across OpenAI, Ollama, and llama.cpp providers with concrete API headers.</p>
+                    <div class="flex gap-2">
+                        <span class="code-lang-badge lang-python">Python</span>
+                        <span class="code-lang-badge lang-rust">Rust</span>
+                    </div>
+                </div>
+                
+                <!-- Plugin Card: Benchmarks -->
+                <div class="plugin-card glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group cursor-pointer" onclick="installPlugin('benchmarks')">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center text-pink-600 group-hover:bg-pink-100 transition-colors">
+                            <span class="text-xl">📊</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold group-hover:text-emerald-600 transition-colors">Benchmark Suites</h3>
+                            <p class="text-xs text-slate-500 font-mono">aa-index • swe • terminal • security</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 mb-6">Model benchmark scoring with WordPress baseline, FLOPS, architecture, and design comparisons.</p>
+                    <div class="flex gap-2">
+                        <span class="code-lang-badge lang-python">Python</span>
+                        <span class="code-lang-badge lang-css">Chart</span>
+                    </div>
+                </div>
+                
+                <!-- Plugin Card: Weight Enforcement -->
+                <div class="plugin-card glass-panel p-8 rounded-2xl hover:glass-depth-2 transition-all group cursor-pointer" onclick="installPlugin('weight-enforcement')">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-100 transition-colors">
+                            <span class="text-xl">🛡️</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold group-hover:text-emerald-600 transition-colors">Weight Enforcement</h3>
+                            <p class="text-xs text-slate-500 font-mono">rac • no-replicate • tier-mesh</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 mb-6">Model weight non-replication enforcement to protect tier and mesh structure from leakage.</p>
+                    <div class="flex gap-2">
+                        <span class="code-lang-badge lang-python">Python</span>
+                        <span class="code-lang-badge lang-rust">Rust</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Installed Plugins -->
+            <div class="mt-16 glass-panel p-8 rounded-2xl">
+                <h3 class="text-xl font-bold mb-6 glass-text">Installed Plugins</h3>
+                <div class="flex flex-wrap gap-4" id="installed-plugins">
+                    <span class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium border border-emerald-200">code-lang (active)</span>
+                    <span class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium border border-blue-200">google-auth (active)</span>
+                    <span class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium border border-purple-200">glass-ui (active)</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Languages Section -->
+    <section id="code-langs" class="hidden pt-32 pb-20 min-h-screen px-6">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold tracking-tight glass-text mb-10">Code Language Elements</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="glass-depth-3 p-8 rounded-2xl border border-white/30">
+                    <h3 class="text-xl font-bold mb-4 glass-text">CSS Glass Template</h3>
+                    <pre class="font-mono text-sm bg-slate-900 text-slate-300 p-6 rounded-xl overflow-x-auto"><code class="language-css">.glass-panel {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}</code></pre>
+                </div>
+                <div class="glass-depth-3 p-8 rounded-2xl border border-white/30">
+                    <h3 class="text-xl font-bold mb-4 glass-text">React + Framer Component</h3>
+                    <pre class="font-mono text-sm bg-slate-900 text-slate-300 p-6 rounded-xl overflow-x-auto"><code class="language-javascript">import { motion, AnimatePresence } from 'framer-motion';
+
+export const GlassPanel = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    className="glass-panel p-6 rounded-2xl"
+  >
+    {children}
+  </motion.div>
+);</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Profile Dropdown (hidden by default) -->
+    <div id="user-menu" class="hidden fixed top-16 right-6 w-48 glass-panel rounded-xl z-50">
+        <div class="p-4">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-400 to-blue-500 flex items-center justify-center text-white font-bold">AJ</div>
+                <div>
+                    <p class="font-semibold text-slate-800" id="user-name">Argon User</p>
+                    <p class="text-xs text-slate-500" id="user-email">signed in with Google</p>
+                </div>
+            </div>
+            <hr class="border-white/30 mb-4">
+            <button class="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Account Settings</button>
+            <button class="w-full text-left px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors" onclick="signOut()">Sign Out</button>
+        </div>
+    </div>
+
+    <!-- Framework CDN (React + Vue) — loaded before component scripts -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script src="src/components/google-login.js"></script>
+    <script src="src/components/plugin-tab.js"></script>
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            // Show target
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active', 'text-emerald-600', 'bg-emerald-50/50'));
+            event?.target?.classList.add('active', 'text-emerald-600', 'bg-emerald-50/50');
+        }
+        
+        function loadEndpoint(endpoint) {
+            const content = document.getElementById('api-content');
+            const titles = {
+                'mcp': 'MCP Router',
+                'weights': 'Weight Enforcement',
+                'feature': 'Feature Availability',
+                'bridge': 'Model Bridge',
+                'benchmark': 'Benchmark Scorer'
+            };
+            content.innerHTML = `
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-2">${titles[endpoint]}</h3>
+                    <p class="text-slate-600">Endpoint documentation for <code class="bg-slate-100 px-2 py-1 rounded font-mono">${endpoint}</code>.</p>
+                </div>
+                <div class="glass-depth-1 p-6 rounded-xl border border-white/40">
+                    <pre class="font-mono text-sm bg-slate-900/50 p-4 rounded-lg overflow-x-auto"><code>GET /api/v1/${endpoint}
+Host: api.yamal.argon
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json</code></pre>
+                </div>
+            `;
+        }
+        
+        function installPlugin(pluginId) {
+            const btn = event.target.closest('.plugin-card');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<div class="flex items-center gap-2"><span class="animate-spin w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full"></span> Installing...</span>';
+            setTimeout(() => {
+                btn.innerHTML = '<div class="flex items-center gap-2 text-emerald-600 font-medium"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Installed</div>';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    // Add to installed plugins
+                    const container = document.getElementById('installed-plugins');
+                    const names = {'code-lang': 'Code Language Support', 'google-auth': 'Google Login', 'glass-ui': 'Glass UI Depth', 'model-bridge': 'Model Bridge', 'benchmarks': 'Benchmark Suites', 'weight-enforcement': 'Weight Enforcement'};
+                    const colors = {'code-lang': 'bg-emerald-100 text-emerald-700 border-emerald-200', 'google-auth': 'bg-red-100 text-red-700 border-red-200', 'glass-ui': 'bg-purple-100 text-purple-700 border-purple-200', 'model-bridge': 'bg-orange-100 text-orange-700 border-orange-200', 'benchmarks': 'bg-pink-100 text-pink-700 border-pink-200', 'weight-enforcement': 'bg-indigo-100 text-indigo-700 border-indigo-200'};
+                    const span = document.createElement('span');
+                    span.className = `px-4 py-2 ${colors[pluginId]} rounded-lg text-sm font-medium border`;
+                    span.textContent = names[pluginId] + ' (active)';
+                    if (!container.querySelector('span:contains("' + names[pluginId] + '")')) {
+                        container.appendChild(span);
+                    }
+                }, 1000);
+            }, 1500);
+        }
+        
+        // Google Login handler
+        document.getElementById('google-login-btn').addEventListener('click', () => {
+            if (window.handleGoogleLogin) {
+                window.handleGoogleLogin();
+            }
+        });
+        
+        function signOut() {
+            document.getElementById('user-avatar').style.display = 'none';
+            document.getElementById('user-menu').classList.add('hidden');
+            document.getElementById('google-login-btn').style.display = 'flex';
+        }
+    </script>
+    
+    <!-- Vue component modules (Vue on top of React) -->
+    <script src="src/components/rate_ticker.js"></script>
+    <script src="src/components/vue_components.js"></script>
+    <script src="src/components/custom_plugins.js"></script>
+    <script src="src/components/mcp_client.js"></script>
+    <script src="src/components/plugin_presets.js"></script>
+    <script>
+        // Bootstrap Vue 3 app mounted on top of React CDN
+        (function bootstrapVue() {
+            const Vue = window.Vue;
+            const { createApp, ref, computed, onMounted } = Vue;
+            const comps = window.ArgonVueComponents || {};
+
+            const App = {
+                name: 'ArgonApp',
+                components: {
+                    'rate-ticker': comps.RateTicker,
+                    'vue-chat': comps.VueChat,
+                    'vue-voice': comps.VueVoice,
+                    'vue-files': comps.VueFiles,
+                    'vue-calls': comps.VueCalls,
+                    'vue-accounts': comps.VueAccounts,
+                    'vue-dashboard': comps.VueDashboard,
+                    'vue-shaders': comps.VueShaders,
+                    'custom-plugins': comps.CustomPlugins,
+                    'mcp-client': comps.McpClient,
+                    'plugin-presets': comps.PluginPresets,
+                },
+                setup() {
+                    const active = ref('home');
+                    const plans = ref(['free', 'pro', 'enterprise']);
+                    const plan = ref('pro');
+
+                    return { active, plans, plan };
+                },
+                template: `
+                    <div class="pb-8">
+                        <!-- Top nav for Vue sections -->
+                        <nav class="mb-8 flex gap-3 flex-wrap">
+                            <button @click="active='home'" :class="{'bg-emerald-600 text-white': active==='home', 'text-slate-600 hover:bg-white/40': active!=='home'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Home</button>
+                            <button @click="active='chat'" :class="{'bg-emerald-600 text-white': active==='chat', 'text-slate-600 hover:bg-white/40': active!=='chat'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Chat (Vue)</button>
+                            <button @click="active='voice'" :class="{'bg-emerald-600 text-white': active==='voice', 'text-slate-600 hover:bg-white/40': active!=='voice'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Voice (Vue)</button>
+                            <button @click="active='files'" :class="{'bg-emerald-600 text-white': active==='files', 'text-slate-600 hover:bg-white/40': active!=='files'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Files (Vue)</button>
+                            <button @click="active='calls'" :class="{'bg-emerald-600 text-white': active==='calls', 'text-slate-600 hover:bg-white/40': active!=='calls'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Calls (Vue)</button>
+                            <button @click="active='accounts'" :class="{'bg-emerald-600 text-white': active==='accounts', 'text-slate-600 hover:bg-white/40': active!=='accounts'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Accounts (Vue)</button>
+                            <button @click="active='dashboard'" :class="{'bg-emerald-600 text-white': active==='dashboard', 'text-slate-600 hover:bg-white/40': active!=='dashboard'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Dashboard (Vue)</button>
+                            <button @click="active='shaders'" :class="{'bg-emerald-600 text-white': active==='shaders', 'text-slate-600 hover:bg-white/40': active!=='shaders'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Shaders (Vue)</button>
+                            <button @click="active='plugins'" :class="{'bg-emerald-600 text-white': active==='plugins', 'text-slate-600 hover:bg-white/40': active!=='plugins'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Plugins (Presets)</button>
+                            <button @click="active='custom'" :class="{'bg-emerald-600 text-white': active==='custom', 'text-slate-600 hover:bg-white/40': active!=='custom'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">Custom Plugins</button>
+                            <button @click="active='mcp'" :class="{'bg-emerald-600 text-white': active==='mcp', 'text-slate-600 hover:bg-white/40': active!=='mcp'}" class="px-4 py-2 rounded-xl text-sm font-medium transition-all">MCP Servers</button>
+                        </nav>
+
+                        <!-- Rate ticker (matches PlanRateLimiter math) -->
+                        <rate-ticker :plan-id="plan" interval-ms="1500" @limit-reached="(e) => console.log('rate limit reached', e)" />
+
+                        <!-- Section panels -->
+                        <div v-if="active==='home'" class="glass-panel p-8 rounded-2xl">
+                            <h2 class="text-2xl font-bold glass-text mb-4">Argon Vue + React Frontend</h2>
+                            <p class="text-slate-600 mb-6">Vue 3 components mounted on top of React 18 via CDN. Use the tabs above to explore each section.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="glass-depth-1 p-6 rounded-xl">
+                                    <div class="text-sm font-bold text-slate-700 mb-2">Frameworks</div>
+                                    <div class="flex gap-2">
+                                        <span class="px-2 py-1 rounded text-xs bg-blue-50 text-blue-700 border border-blue-200">React 18</span>
+                                        <span class="px-2 py-1 rounded text-xs bg-green-50 text-green-700 border border-green-200">Vue 3</span>
+                                        <span class="px-2 py-1 rounded text-xs bg-purple-50 text-purple-700 border border-purple-200">Tailwind CDN</span>
+                                    </div>
+                                </div>
+                                <div class="glass-depth-1 p-6 rounded-xl">
+                                    <div class="text-sm font-bold text-slate-700 mb-2">Ticker</div>
+                                    <div class="text-xs text-slate-500 mb-2">Syncs with PlanRateLimiter math (RPM/TPM/concurrent calls)</div>
+                                    <div class="text-xs font-mono text-emerald-600">Endpoint: /rate/status</div>
+                                </div>
+                                <div class="glass-depth-1 p-6 rounded-xl">
+                                    <div class="text-sm font-bold text-slate-700 mb-2">Components</div>
+                                    <div class="text-xs text-slate-500">chat · voice · files · calls · accounts · dashboard · shaders</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <vue-chat v-else-if="active==='chat'" model="argon" />
+                        <vue-voice v-else-if="active==='voice'" />
+                        <vue-files v-else-if="active==='files'" />
+                        <vue-calls v-else-if="active==='calls'" />
+                        <vue-accounts v-else-if="active==='accounts'" />
+                        <vue-dashboard v-else-if="active==='dashboard'" />
+                        <vue-shaders v-else-if="active==='shaders'" />
+                        <plugin-presets v-else-if="active==='plugins'" />
+                        <custom-plugins v-else-if="active==='custom'" />
+                        <mcp-client v-else-if="active==='mcp'" />
+                    </div>
+                `,
+            };
+
+            const app = createApp(App);
+            app.mount('#vue-app');
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+/// uvx shader — call ring animation for live call system
+/// Pulsing ring that expands/contracts during an active call
+
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform float u_call_active; // 0..1 whether a call is active
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution;
+    vec2 center = vec2(0.5);
+    
+    float d = length(uv - center);
+    
+    // Expanding rings
+    float ring1 = smoothstep(0.35, 0.40, abs(d - (0.2 + 0.3 * fract(u_time * 1.5))));
+    float ring2 = smoothstep(0.35, 0.40, abs(d - (0.4 + 0.2 * fract(u_time * 0.8 + 0.5))));
+    
+    vec3 color = vec3(0.0);
+    color += vec3(0.0, 0.8, 1.0) * ring1 * u_call_active;
+    color += vec3(0.2, 1.0, 0.4) * ring2 * u_call_active;
+    
+    // Central dot when active
+    float centerGlow = smoothstep(0.08, 0.02, d) * u_call_active;
+    color += vec3(1.0, 1.0, 1.0) * centerGlow * 0.5;
+    
+    gl_FragColor = vec4(color, u_call_active * 0.6);
+}

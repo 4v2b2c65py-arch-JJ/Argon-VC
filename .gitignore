@@ -1,0 +1,9 @@
+# Frontend only — no backend code
+__pycache__/
+*.pyc
+*.py
+.env
+node_modules/
+.DS_Store
+.vercel
+*.log

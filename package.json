@@ -1,0 +1,45 @@
+{
+  "name": "argon-frontend",
+  "version": "1.0.0",
+  "description": "Argon model API frontend — glass UI landing page, Google login, plugin tab, code language elements, Vue + React components, rate ticker",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Open frontend/index.html in a browser or serve with any static server'",
+    "serve": "python -m http.server 8080 --directory yamal/frontend"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "vue": "^3.3.0"
+  },
+  "codeLanguages": [
+    "css",
+    "react",
+    "vue",
+    "framer",
+    "python",
+    "rust",
+    "tailwind"
+  ],
+  "plugins": [
+    "code-lang",
+    "google-auth",
+    "glass-ui",
+    "model-bridge",
+    "benchmarks",
+    "weight-enforcement",
+    "rate-ticker"
+  ],
+  "ui": {
+    "theme": "glass-ui",
+    "depthLayers": 3,
+    "backdropBlur": true,
+    "framerTemplate": true,
+    "frameworks": ["react", "vue"],
+    "ticker": {
+      "target": "rate-limiter",
+      "intervalMs": 1000,
+      "scrollSpeed": 60
+    }
+  }
+}
