@@ -4,18 +4,17 @@ Argon Model API Frontend — Vue 3 + React 18 glass UI landing page with plugin 
 
 ## Live Portal
 
-**Vercel deployment:** https://brisk-poplar-0dnm3mc.tmp.now
-
-> Temporary deployment — expires in 60 minutes. Claim it at https://vercel.com/claim-deployment?code=ecb3268a-6b17-4c70-86b7-07f5e060b0f8 to keep it, or run `vercel login` and `vercel` to make it permanent.
+**Vercel production:** https://arvc-indol.vercel.app
 
 ## Deploy
 
 This is a pure frontend (HTML + Tailwind CDN + Vue/React via CDN). No build step required.
 
-**Option 1: Vercel**
+**Option 1: Vercel (standard production)**
 1. Install Vercel CLI: `npm i -g vercel`
-2. From this folder: `vercel`
-3. Follow the prompts to deploy.
+2. From this folder: `vercel login` (browser auth)
+3. Run `vercel --prod` to deploy to production
+4. Linked GitHub repo: https://github.com/4v2b2c65py-arch-JJ/Argon-VC.git — auto-deploys on every push to `main`
 
 **Option 2: GitHub Pages**
 1. Push this repo to GitHub.
@@ -26,6 +25,10 @@ This is a pure frontend (HTML + Tailwind CDN + Vue/React via CDN). No build step
 python -m http.server 8080
 # open http://localhost:8080
 ```
+
+## Config
+
+`vercel.json` is included so Vercel serves `index.html` for all routes (single-page app routing).
 
 ## What's included
 
