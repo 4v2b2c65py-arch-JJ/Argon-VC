@@ -2,6 +2,12 @@
 
 Argon Model API Frontend — Vue 3 + React 18 glass UI landing page with plugin presets, MCP client, rate ticker, chat, voice, files, calls, accounts, dashboard, and shaders.
 
+## Live Portal
+
+**Vercel deployment:** https://brisk-poplar-0dnm3mc.tmp.now
+
+> Temporary deployment — expires in 60 minutes. Claim it at https://vercel.com/claim-deployment?code=ecb3268a-6b17-4c70-86b7-07f5e060b0f8 to keep it, or run `vercel login` and `vercel` to make it permanent.
+
 ## Deploy
 
 This is a pure frontend (HTML + Tailwind CDN + Vue/React via CDN). No build step required.
