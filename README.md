@@ -173,7 +173,14 @@ Local dispatch/registry/routing/pricing/provision ops (credential-safe; no exter
 | 4000 | 547,056.35 | ok |
 | 8000 | 856,576.94 | time cap (`argon_provision_status`) — effective local limit in this sweep |
 
-Per-provider: all 7 providers assessed; local dispatch ~856k ops/s. Remote providers (OpenAI/Claude/Nemotron/HF) and Vercel portal end-to-end speed is dominated by network/provider latency; token generation measured separately when a local backend/model is loaded. Raw: `~/.qb_protocol_velocity_benchmark.json`, `GET/POST /benchmark/velocity`.
+Per-provider: all 7 providers assessed; local dispatch ~856k ops/s.
+
+#### Codepath Packets → Portal/Long-Term Recall (driver code/data)
+Read-only, allowlisted packet ingest for model access (no credentials). Allowed roots default to `QBOX---opti`, `qb_protocol`, `newbladelib` (extend via `QB_DRIVER_PATHS`). Packet summaries/refs can be stored for Vercel portal recall and mesh datapassage.
+- `GET /codepath/roots` | `GET /codepath/list?path=` | `GET /codepath/read?path=`
+- `POST /codepath/packet` `{"paths":[...],"node_id":"local","store_recall":true}` → returns packet + `recall_key`; stores recall ref + shared mesh data (`/pool/data`).
+- `GET/POST /codepath/recall` for long-term codepath refs.
+ Remote providers (OpenAI/Claude/Nemotron/HF) and Vercel portal end-to-end speed is dominated by network/provider latency; token generation measured separately when a local backend/model is loaded. Raw: `~/.qb_protocol_velocity_benchmark.json`, `GET/POST /benchmark/velocity`.
 
 
 *Credential safety:* registry exposes only env var names + configured booleans. Never commit `.env`, API keys, tokens, or wallet secrets.
